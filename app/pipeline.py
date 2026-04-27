@@ -69,7 +69,7 @@ class TBCAPipeline:
             return
         try:
             from transformers import AutoTokenizer, AutoModelForSequenceClassification
-            import torch
+            import torch  # noqa: F401
 
             model_name = "yangheng/deberta-v3-base-absa-v1.1"
             logger.info(f"Loading ABSA model: {model_name}")
