@@ -5,7 +5,7 @@ Runs without GPU or network — uses keyword fallback ABSA.
 
 import numpy as np
 import pytest
-from app.pipeline import TBCAPipeline, ASPECTS, PT_LAMBDA, PT_ALPHA
+from app.pipeline import TBCAPipeline, ASPECTS, PT_ALPHA
 
 
 @pytest.fixture(scope="module")
