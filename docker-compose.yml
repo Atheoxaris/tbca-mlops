@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+
+  # ── TBCA Inference API ──────────────────────────────────────────────────────
+  tbca-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: tbca-api
+    ports:
+      - "8000:8000"
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - MLFLOW_EXPERIMENT=tbca-inference
+    volumes:
+      - hf-cache:/app/.cache/huggingface   # persist model weights
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - tbca-net
+
+  # ── MLflow Tracking Server ──────────────────────────────────────────────────
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.13.0
+    container_name: tbca-mlflow
+    ports:
+      - "5000:5000"
+    command: >
+      mlflow server
+        --host 0.0.0.0
+        --port 5000
+        --backend-store-uri sqlite:///mlflow/mlflow.db
+        --default-artifact-root /mlflow/artifacts
+    volumes:
+      - mlflow-data:/mlflow
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - tbca-net
+
+volumes:
+  hf-cache:
+  mlflow-data:
+
+networks:
+  tbca-net:
+    driver: bridge
